@@ -1,0 +1,56 @@
+defaults:
+  - schema
+  - _self_
+
+# model attributes
+base_model: gine
+pe_method: none
+n_node_types: 39   # based on https://github.com/pyg-team/pytorch_geometric/files/7494194/README.txt
+n_edge_types: 10
+node_emb_dims: 80
+
+
+phi_model_name: gin
+pe_dims: 32   # based on SignNet and BasisNet paper (Table 1)
+n_phi_layers: 3
+phi_hidden_dims: 64
+
+psi_model_name: zero
+n_psis: 16
+n_psi_layers: 3
+psi_hidden_dims: 16
+psi_activation: relu
+num_heads: 4
+pe_aggregate: concat
+
+n_base_layers: 4
+base_hidden_dims: 80
+
+n_mlp_layers: 3
+mlp_hidden_dims: 80
+mlp_use_bn: true
+mlp_use_ln: false
+mlp_activation: relu
+mlp_dropout_prob: 0.0
+
+residual: true
+graph_norm: false
+batch_norm: false
+
+# data attributes
+use_subset: true
+train_batch_size: 64
+val_batch_size: 64
+
+# optimizer attributes
+lr: 1e-4
+weight_decay: 1e-4
+momentum: 0.9
+nesterov: false
+
+# scheduler attributes
+n_warmup_steps: 100
+
+# miscellaneous
+n_epochs: 100
+out_dirpath: out/baseline
