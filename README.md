@@ -13,8 +13,8 @@ Feel free to contact yinan8114@gmail.com if there is any question.
 In this work, we present SPE, a Laplacian-based graph positional encodings that are provably stable and expressive. The key insight is to perform a **soft and learnable** ``partition" of eigensubspaces in an **eigenvalue dependent** way, hereby achieving both stability (from the soft partition) and expressivity (from dependency on both eigenvalues and eigenvectors). 
 
 
-Our SPE method processes eigenvectors $V$ and eigenvalues $\lambda$ into node positional encodings as follows:
-$$\text{SPE}(V, \lambda)=\rho(V\text{diag}\{\phi_1(\lambda)\}V^{\top}, V\text{diag}\{\phi_2(\lambda)\}V^{\top}, ..., V\text{diag}\{\phi_m(\lambda)\}V^{\top}),$$
+Our SPE method processes eigenvectors $V\in\mathbb{R}^{n\times d}$ and eigenvalues $\lambda$ into node positional encodings as follows:
+$$\text{SPE}(V, \lambda)=\rho(V\text{diag}\{\phi_1(\lambda)\}V^{T}, V\text{diag}\{\phi_2(\lambda)\}V^{T}, ..., V\text{diag}\{\phi_m(\lambda)\}V^{T}),$$
 where $\rho$ and $\phi_i$ are permutational equivariant functions.
 
 ## Code usage
