@@ -2,7 +2,7 @@
 
 ## About
 
-This is the official code for the paper "On the Expressivity of Stable Positional Encodings for Graph Neural Networks". 
+This is the official code for the paper: [On the Expressivity of Stable Positional Encodings for Graph Neural Networks](https://arxiv.org/abs/2310.02579). 
 
 Feel free to contact yinan8114@gmail.com if there is any question.
 
