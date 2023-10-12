@@ -9,6 +9,7 @@ class Schema:
     n_node_types: int
     n_edge_types: int
     node_emb_dims: int
+    pooling: str
 
 
     phi_model_name: str
@@ -29,6 +30,7 @@ class Schema:
     n_mlp_layers: int
     mlp_hidden_dims: int
     mlp_use_bn: bool
+    mlp_use_ln: bool
     mlp_activation: str
     mlp_dropout_prob: float
 
@@ -40,6 +42,7 @@ class Schema:
     use_subset: bool
     train_batch_size: int
     val_batch_size: int
+    # class_weight: bool
 
     # optimizer attributes
     lr: float

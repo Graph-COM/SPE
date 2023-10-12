@@ -39,6 +39,44 @@ class IGN2to1(nn.Module):
         return x
 
 
+
+
+class IGN2to1_mask(nn.Module):
+    # a masked version
+    ''' batch x d x n x n -> batch x d x n
+    '''
+    def __init__(self, in_channels, hidden_channels, out_channels, num_layers=1, device='cuda', use_bn=True):
+        super(IGN2to1_mask, self).__init__()
+
+        self.use_bn = use_bn
+        if self.use_bn: self.bns = nn.ModuleList()
+        self.equi_layers = nn.ModuleList()
+        self.equi_layers.append(layer_2_to_1(in_channels, hidden_channels, device=device))
+        if self.use_bn: self.bns.append(nn.BatchNorm1d(hidden_channels))
+        self.equi_layers.append(layer_1_to_1(hidden_channels, hidden_channels, device=device))
+        if self.use_bn: self.bns.append(nn.BatchNorm1d(hidden_channels))
+        self.equi_layers.append(layer_1_to_1(hidden_channels, hidden_channels, device=device))
+        if self.use_bn: self.bns.append(nn.BatchNorm1d(hidden_channels))
+
+        self.fc1 = nn.Linear(hidden_channels, hidden_channels)
+        if self.use_bn: self.bns.append(nn.BatchNorm1d(hidden_channels))
+        self.fc2 = nn.Linear(hidden_channels, out_channels)
+
+    def forward(self, x, mask):
+        for i, layer in enumerate(self.equi_layers):
+            x = layer(x)
+            x = F.relu(x)
+            if self.use_bn: x = self.bns[i](x)
+            x = x * mask.unsqueeze(1)
+        # b x d x n
+        x = x.transpose(2,1) # b x n x d
+        x = F.relu(self.fc1(x))
+        x = x * mask.unsqueeze(-1)
+        x = self.fc2(x)
+        x = x * mask.unsqueeze(-1)
+        x = x.transpose(2,1) # b x d x n
+        return x
+
 # equi_2_to_2
 class layer_2_to_2(nn.Module):
     '''
@@ -126,6 +164,10 @@ class layer_2_to_1(nn.Module):
         output = output + self.bias
 
         return output
+
+
+
+
 
 # equi_1_to_2
 class layer_1_to_2(nn.Module):

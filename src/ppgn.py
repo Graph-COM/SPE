@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-from src_zinc.mlp import MLP
+from src.mlp import MLP
 from typing import Callable
 
 class MaskedPPGN(nn.Module):

@@ -3,8 +3,8 @@ from typing import Callable
 import torch
 from torch import nn
 from torch_geometric.nn import MessagePassing
-from src_zinc.deepsets import MaskedDeepSetsLayer
-from src_zinc.mlp import MLP
+from src.deepsets import MaskedDeepSetsLayer
+from src.mlp import MLP
 
 class GINDeepsets(nn.Module):
     layers: nn.ModuleList

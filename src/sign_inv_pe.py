@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 from typing import List, Callable
-from src_zinc.ign import IGN2to1
+from src.ign import IGN2to1
 
 class SignInvPe(nn.Module):
     # pe = rho(phi(V)+phi(-V))

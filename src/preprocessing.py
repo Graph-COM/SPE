@@ -4,10 +4,10 @@ from torch_geometric.utils import get_laplacian, to_dense_adj
 
 class TargetNormalizer:
     def __init__(self, Y):
-        self.mean = Y.mean()
-        self.std = Y.std()
+        self.mean = Y.mean(dim=0)
+        self.std = Y.std(dim=0)
 
     def transform(self, dataset):
         # target normalization
-        dataset._data.y = (dataset.y - self.mean) / self.std
+        dataset.data.y = (dataset.data.y - self.mean) / self.std
 

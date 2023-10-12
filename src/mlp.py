@@ -11,13 +11,13 @@ class MLP(nn.Module):
 
     def __init__(
         self, n_layers: int, in_dims: int, hidden_dims: int, out_dims: int, use_bn: bool, activation: str,
-        dropout_prob: float
+        dropout_prob: float, norm_type: str = "batch"
     ) -> None:
         super().__init__()
 
         self.layers = nn.ModuleList()
         for _ in range(n_layers - 1):
-            layer = MLPLayer(in_dims, hidden_dims, use_bn, activation, dropout_prob)
+            layer = MLPLayer(in_dims, hidden_dims, use_bn, activation, dropout_prob, norm_type)
             self.layers.append(layer)
             in_dims = hidden_dims
 
@@ -50,11 +50,16 @@ class MLPLayer(nn.Module):
     dropout: nn.Dropout
 
     def __init__(self, in_dims: int, out_dims: int, use_bn: bool, activation: str,
-                 dropout_prob: float) -> None:
+                 dropout_prob: float, norm_type: str = "batch") -> None:
         super().__init__()
         # self.fc = nn.Linear(in_dims, out_dims, bias=not use_bn)
         self.fc = nn.Linear(in_dims, out_dims, bias=True)
-        self.bn = nn.BatchNorm1d(out_dims) if use_bn else None
+        if use_bn:
+            self.bn = nn.BatchNorm1d(out_dims) if norm_type == "batch" else nn.LayerNorm(out_dims)
+        else:
+            self.bn = None
+        # self.bn = nn.BatchNorm1d(out_dims) if use_bn else None
+        # self.ln = nn.LayerNorm(out_dims) if use_bn else None
 
         if activation == "tanh":
             self.activation = nn.Tanh()
@@ -72,10 +77,16 @@ class MLPLayer(nn.Module):
         :return: Output feature matrix. [***, D_out]
         """
         X = self.fc(X)                     # [***, D_out]
-        shape = X.size()
-        X = X.reshape(-1, shape[-1])   # [prod(***), D_out]
-        X = self.bn(X)                 # [prod(***), D_out]
-        X = X.reshape(shape)           # [***, D_out]
+        if self.bn is not None:
+#            if X.ndim == 3:
+#                # X = self.bn(X.transpose(2, 1)).transpose(2, 1)
+#                X = self.ln(X)
+#            else:
+#                X = self.bn(X)
+            shape = X.size()
+            X = X.reshape(-1, shape[-1])   # [prod(***), D_out]
+            X = self.bn(X)                 # [prod(***), D_out]
+            X = X.reshape(shape)           # [***, D_out]
         X = self.activation(X)             # [***, D_out]
 #        if self.bn is not None:
 #            if X.ndim == 3:

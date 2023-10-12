@@ -4,7 +4,7 @@ import torch
 from torch import nn
 from torch_geometric.nn import MessagePassing
 
-from src_zinc.mlp import MLP
+from src.mlp import MLP
 
 class GIN(nn.Module):
     layers: nn.ModuleList

@@ -1,5 +1,7 @@
 import torch
 import numpy as np
+import matplotlib.pyplot as plt
+from torchmetrics.classification import BinaryAUROC
 
 def mask2d_sum_pooling(x, mask):
     #  x: [B, N, N, d], mask: [B, N, N, 1]
@@ -74,9 +76,93 @@ def get_projections(eigvals, eigvecs):
         same_size_projs[mult] = torch.cat(projs, dim=0)
 
     # sanity check
-    #    temp = 0
-    #    for key in same_size_projs.keys():
-    #        temp += same_size_projs[key].size(0) * key
-    #    assert temp == pe_dim
+#    temp = 0
+#    for key in same_size_projs.keys():
+#        temp += same_size_projs[key].size(0) * key
+#    assert temp == pe_dim
 
     return same_size_projs, uniq_mults
+
+
+def dataset_statistics(dataset, visualization=False):
+    # graph size distribution
+    size = []
+    for data in dataset:
+        size.append(int(data.num_nodes))
+    size = np.array(size)
+    print('Mean (std) of graph size is %.3f+-%.3f'%(size.mean(), size.std()))
+    print('Max/min graph size is %d, %d' % (size.max(), size.min()))
+    if visualization:
+        fig, axs = plt.subplots(2)
+        axs[0].hist(size, bins=size.max()-size.min())
+        axs[0].set_title("Graph size distribution")
+
+    # eigenvalues distribution
+    eig_mults = []
+    for data in dataset:
+        Lambda = data.Lambda[0, :data.num_nodes]
+        rounded_Lambda = torch.unique(around(Lambda))
+        eig_mults.append(Lambda.size(-1) - rounded_Lambda.size(0) + 1)
+
+    eig_mults = np.array(eig_mults)
+    print("Percentage of graphs that has multiplicity: %.3f" % (np.mean(eig_mults > 1) * 100))
+    print("Multiplicity mean(std) = %.3f+-%.3f" % (eig_mults.mean(), eig_mults.std()))
+    if visualization:
+        axs[1].hist(eig_mults, bins=eig_mults.max()-eig_mults.min())
+        axs[1].set_title("Eigenvalues multiplicity distribution")
+        plt.show()
+
+
+
+
+def classification_analysis(y_pred, y_label, num_nodes=None):
+    # analysis the classification behavior
+    # ground truth analysis
+    num_p, num_n = (y_label.int() == 1).float().sum().item(), (y_label.int() == 0).float().sum().item()
+    print("Ground truth: %.3f%% are positive, %.3f%% are negative"%(100*num_p / (num_p+num_n), 100*num_n/(num_p+num_n)))
+
+    # prediction analysis
+    pred = (y_pred > 0.5).float()
+    num_pred_p, num_pred_n = (pred.int() == 1).float().sum().item(), (pred.int() == 0).float().sum().item()
+    TP = (pred * y_label).sum()
+    TN = (torch.abs(pred - 1) * torch.abs(y_label - 1)).sum()
+    FP = num_pred_p - TP
+    FN = num_pred_n - TN
+    TP, TN, FP, FN = TP / num_p, TN / num_n, FP / num_n, FN / num_p
+    print("Rate of TP | TN | FP | FN: %.3f | %.3f | %.3f | %.3f" % (TP, TN, FP, FN))
+
+
+    # logits analysis
+    logits_n = y_pred[torch.where(y_label == 0.0)].mean(), y_pred[torch.where(y_label == 0.0)].std()
+    logits_p = y_pred[torch.where(y_label == 1.0)].mean(), y_pred[torch.where(y_label == 1.0)].std()
+    print("Probability for positive samples: %.3f+-%.3f" % logits_p)
+    print("Probability for negative samples: %.3f+-%.3f" % logits_n)
+
+
+    # analysis w.r.t #nodes
+    if num_nodes is not None:
+        sort, index = torch.sort(num_nodes)
+        y_pred_all = y_pred[index]
+        y_label_all = y_label[index]
+        # each 0.1 quantile:
+        n = 10
+        for i in range(n):
+            print("----- Number of nodes ranging from %d to %d -----" % (sort[int(i/n*len(sort))],
+                                                                         sort[int((i+1)/n*len(sort))-1]))
+            y_pred = y_pred_all[int(i/n*len(sort)): int((i+1)/n*len(sort))]
+            y_label = y_label_all[int(i/n*len(sort)): int((i+1)/n*len(sort))]
+            pred = (y_pred > 0.5).float()
+            num_pred_p, num_pred_n = (pred.int() == 1).float().sum().item(), (pred.int() == 0).float().sum().item()
+            num_p, num_n = (y_label.int() == 1).float().sum().item(), (y_label.int() == 0).float().sum().item()
+            print("Ground truth: %.3f%% are positive, %.3f%% are negative" % (
+            100 * num_p / (num_p + num_n), 100 * num_n / (num_p + num_n)))
+            TP = (pred * y_label).sum()
+            TN = (torch.abs(pred - 1) * torch.abs(y_label - 1)).sum()
+            FP = num_pred_p - TP
+            FN = num_pred_n - TN
+            TP, TN, FP, FN = TP / num_p, TN / num_n, FP / num_n, FN / num_p
+            auc = BinaryAUROC()(y_pred, y_label)
+            print("Rate of TP | TN | FP | FN: %.3f | %.3f | %.3f | %.3f" % (TP, TN, FP, FN))
+            print("AUC: %.3f" % auc)
+
+            print("---------------")

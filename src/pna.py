@@ -15,7 +15,7 @@ from torch_geometric.nn.resolver import activation_resolver
 from torch_geometric.typing import Adj, OptTensor
 from torch_geometric.utils import degree
 
-from src_zinc.mlp import MLP
+from src.mlp import MLP
 
 
 class PNA(nn.Module):
