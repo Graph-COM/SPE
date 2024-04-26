@@ -26,7 +26,7 @@ See requirements.txt for necessary python environment.
 
 ### Dataset
 
-Download all required datasets from [here](https://drive.google.com/drive/folders/17nVALCgTz0LV8pVuoM0xQnRqwRH3Bz7a?usp=drive_link). The downloaded 'data' directory should be placed in the root direcotry.
+Download all required datasets from [here](https://drive.google.com/drive/folders/17nVALCgTz0LV8pVuoM0xQnRqwRH3Bz7a?usp=drive_link). The downloaded 'data' directory should be placed in the root direcotry. For example, './data/drugood', etc.
 
 ### Reproduce experiments
 
