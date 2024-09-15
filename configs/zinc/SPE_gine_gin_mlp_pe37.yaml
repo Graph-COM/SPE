@@ -38,7 +38,7 @@ graph_norm: false
 batch_norm: false
 
 # data attributes
-use_subset: false
+use_subset: true
 train_batch_size: 128
 val_batch_size: 128
 
