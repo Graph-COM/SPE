@@ -95,7 +95,7 @@ class Trainer:
         kwargs["sn"] = cfg.graph_norm
         kwargs["feature_type"] = "discrete"
         # self.model = construct_model(cfg, self.create_mlp, **kwargs)
-        self.model = construct_model(cfg, (self.create_mlp, self.create_mlp_ln), **kwargs)
+        self.model = construct_model(cfg, self.create_mlp, **kwargs)
         self.model.to("cpu" if gpu_id is None else f"cuda:{gpu_id}")
 
         # Construct auxiliary training objects
